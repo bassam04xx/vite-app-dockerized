@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: pg_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: main
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - pg_wal:/var/lib/postgresql/wal
+    ports:
+      - "5432:5432"
+  
+  backend:
+    image: bassam2004/backend:1.0.0  # Use the image from Docker Hub
+    container_name: backend_server
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: main
+    ports:
+      - "5000:3000"  # Expose backend on port 5000 (host) and 3000 (container)
+    volumes:
+      - /usr/src/app/node_modules
+    depends_on:
+      - db
+
+  frontend:
+    image: bassam2004/frontend:1.0.0  # Use the image from Docker Hub
+    container_name: frontend_server
+    ports:
+      - "80:80"  # Vite default port for dev
+    volumes:
+      - /usr/src/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  pg_data:
+  pg_wal:
